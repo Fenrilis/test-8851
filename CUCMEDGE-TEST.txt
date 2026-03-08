@@ -1,0 +1,76 @@
+cucmEDGE:
+conf t
+ voice service voip
+  allow-connections h323 to sip
+          
+  allow-connections sip to h323
+  allow-connections sip to sip
+  supplementary-service h450.12
+ sip
+   bind control source-interface gi 0/0/0
+   bind media source-interface gi 0/0/0
+   registrar server expires max 600 min 60
+ voice register global
+  mode cme
+  source-address 10.61.1.1 port 5060
+  max-dn 12
+  max-pool 12
+  authenticate register
+  create profile sync syncinfo.xml
+ voice register dn 1
+   number 6123
+   allow watch
+   name 6123
+ voice register dn 2
+   number 6124
+   allow watch
+   name 6124
+  voice register pool 1
+    type 8851
+    id mac dcf7.19d8.a668
+    number 1 dn 1
+    dtmf-relay sip-notify
+    username 6123 password 6123
+    codec g711ulaw
+	voice register pool 2
+    type 8851
+    id mac dcf7.19d8.f4fc
+    number 1 dn 2
+    dtmf-relay sip-notify
+    username 6124 password 6124
+    codec g711ulaw
+	end
+	conf t
+ voice register global
+ create profile
+ end
+ 
+ 
+ 
+ 
+ 
+corebaba:
+config t
+hostname corebaba61
+int vlan 1
+no shut
+ip add 10.61.1.4 255.255.255.0
+enable secret pass
+line cons 0
+no login
+exec-timeout 0 0
+line vty 0 14
+no login
+exec-timeout 0 0
+ip dhcp excluded-add 10.61.1.1 10.61.1.50
+ip dhcp pool DATA1
+network 10.61.1.0 255.255.255.0
+default-router 10.61.1.1
+option 150 ip 10.61.1.1
+end
+
+
+conf t
+ voice register global
+ create profile
+ end
